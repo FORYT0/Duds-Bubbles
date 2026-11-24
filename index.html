@@ -144,6 +144,13 @@ h2{font-family:'Rozha One',serif;font-weight:400;font-size:clamp(2rem,4.6vw,3rem
 @media(max-width:700px){.duo{grid-template-columns:1fr}.frame{border-radius:20px}}
 /* reviews */
 #reviews[hidden]{display:none}
+.scr-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:8px 4px 20px;cursor:grab}
+.scr-track:active{cursor:grabbing}
+.scr-track::-webkit-scrollbar{height:5px}
+.scr-track::-webkit-scrollbar-track{background:var(--mist);border-radius:99px}
+.scr-track::-webkit-scrollbar-thumb{background:var(--sky);border-radius:99px}
+.scr-track img{flex:0 0 320px;width:320px;height:320px;object-fit:cover;object-position:top;border-radius:18px;box-shadow:var(--shadow);scroll-snap-align:start}
+@media(max-width:600px){.scr-track img{flex:0 0 76vw;width:76vw;height:76vw}}
 .rgrid{columns:3 280px;column-gap:18px}
 .rv{break-inside:avoid;background:#fff;border-radius:var(--r);padding:26px 24px;margin-bottom:18px;box-shadow:var(--shadow)}
 .rv blockquote{font-size:.98rem;line-height:1.6}
@@ -387,11 +394,17 @@ footer img{width:54px;border-radius:50%;margin:0 auto 10px}
 <section id="reviews">
   <div class="wrap">
     <p class="eyebrow caps reveal">Kind words</p>
-    <h2 class="reveal">Loved along Thika Road</h2>
-    <p class="sub reveal">Real messages from customers we've washed for.</p>
-    <div class="areas reveal" id="areas" aria-label="Areas we've served"></div>
-    <div class="rgrid" id="rgrid"></div>
-    <div class="mid reveal"><a class="btn caps" href="#book">Book my wash</a></div>
+    <h2 class="reveal">What customers are saying</h2>
+    <p class="sub reveal">Real WhatsApp messages from people we've washed for along Thika Road.</p>
+    <div class="scr-track reveal">
+      <img src="assets/review-1.jpg" alt="WhatsApp review from Joyce M." loading="lazy" width="512" height="512">
+      <img src="assets/review-2.jpg" alt="WhatsApp review from Brian K." loading="lazy" width="512" height="512">
+      <img src="assets/review-3.jpg" alt="WhatsApp review from Wanjiku N." loading="lazy" width="512" height="512">
+      <img src="assets/review-4.jpg" alt="WhatsApp review from David O." loading="lazy" width="512" height="512">
+      <img src="assets/review-5.jpg" alt="WhatsApp review from Aisha L." loading="lazy" width="512" height="512">
+      <img src="assets/review-6.jpg" alt="WhatsApp review from Peter M." loading="lazy" width="512" height="512">
+    </div>
+    <div class="mid reveal" style="margin-top:16px"><a class="btn caps" href="#book">Book my wash</a></div>
   </div>
 </section>
 
