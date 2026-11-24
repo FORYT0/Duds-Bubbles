@@ -76,7 +76,8 @@ h1 em{font-style:normal;color:var(--brown)}
 .float{position:absolute;background:#fff;border-radius:16px;padding:11px 16px;font-size:.8rem;box-shadow:0 10px 30px rgba(43,74,88,.18);font-weight:500}
 .float.a{left:18px;bottom:26px}.float.b{right:18px;top:26px}
 /* real soap bubbles */
-#bubbles{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+#bubbles,#bubblesFront{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+#bubblesFront{z-index:50}
 .bub{position:absolute;bottom:0;border-radius:50%;opacity:0;will-change:transform,opacity;
  background:
   radial-gradient(circle at 30% 26%,rgba(255,255,255,.95) 0 5%,rgba(255,255,255,0) 15%),
@@ -96,7 +97,7 @@ section{padding:92px 0}
 .lite .cov::before{clip-path:none}
 /* poppable bubbles */
 .bub.gone{display:none}
-.pop,.pop i{position:fixed;pointer-events:none;z-index:35;border-radius:50%}
+.pop,.pop i{position:fixed;pointer-events:none;z-index:55;border-radius:50%}
 .pop{border:2px solid rgba(255,255,255,.95);box-shadow:0 0 0 1px rgba(110,185,228,.45),inset 0 0 12px rgba(150,205,240,.4);animation:popr .42s ease-out forwards}
 .pop i{left:50%;top:50%;width:7px;height:7px;margin:-3px 0 0 -3px;background:rgba(190,225,245,.95);box-shadow:0 0 0 1px rgba(255,255,255,.9);animation:popd .5s ease-out forwards}
 @keyframes popr{from{transform:scale(.85);opacity:1}to{transform:scale(1.55);opacity:0}}
@@ -503,19 +504,19 @@ $('#y').textContent=new Date().getFullYear();
 var bar=$('#bar'),hero=$('#top');
 if('IntersectionObserver' in window){new IntersectionObserver(function(e){var on=!e[0].isIntersecting;bar.classList.toggle('show',on);document.body.classList.toggle('has-bar',on)},{threshold:0}).observe(hero)}else{bar.classList.add('show');document.body.classList.add('has-bar')}
 // bubbles: soft, realistic, drifting up behind the page
-if(!matchMedia('(prefers-reduced-motion: reduce)').matches){var wrap=document.createElement('div');wrap.id='bubbles';wrap.setAttribute('aria-hidden','true');
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){var wrap=document.createElement('div');wrap.id='bubbles';wrap.setAttribute('aria-hidden','true');var front=document.createElement('div');front.id='bubblesFront';front.setAttribute('aria-hidden','true');
  var nav=navigator,cn=nav.connection||{},weak=(nav.deviceMemory&&nav.deviceMemory<=2)||(nav.hardwareConcurrency&&nav.hardwareConcurrency<=4&&innerWidth<700)||/2g/.test(cn.effectiveType||'');
  var N=cn.saveData?0:(weak?6:(innerWidth<700?12:24));for(var b=0;b<N;b++){var e=document.createElement('span');e.className='bub';var z=Math.pow(Math.random(),1.5)*78+16;
   e.style.cssText='width:'+z+'px;height:'+z+'px;left:'+(Math.random()*96)+'%;--d:'+(16+Math.random()*16-z/10)+'s;--s:'+(3+Math.random()*4)+'s;--x:'+(10+Math.random()*26)+'px;--o:'+(.2+Math.min(1,(z-16)/70)*.74+Math.random()*.06).toFixed(2)+';--w:-'+(Math.random()*26)+'s';
-  wrap.appendChild(e)}
- document.body.insertBefore(wrap,document.body.children[1]);
+  (z>=62?front:wrap).appendChild(e);if(z>=62)e.style.setProperty('--o',Math.min(.7,parseFloat(e.style.getPropertyValue('--o'))))}
+ document.body.insertBefore(wrap,document.body.children[1]);document.body.appendChild(front);
  // self-tuning: if scrolling/animation is janky, thin the bubbles, then drop them
- var bs=[].slice.call(wrap.children),last=0,frames=0,t0=0,round=0;
+ var bs=[].slice.call(wrap.children).concat([].slice.call(front.children)),last=0,frames=0,t0=0,round=0;
  function chk(t){if(document.hidden){t0=0;frames=0;return requestAnimationFrame(chk)}
   if(!t0){t0=t;frames=0}frames++;
   if(t-t0>2000){var fps=frames/((t-t0)/1000);t0=0;
    if(fps<42&&round<2){round++;var keep=round===1?Math.ceil(bs.length/2):0;bs.slice(keep).forEach(function(x){x.remove()});bs=bs.slice(0,keep);
-    if(!keep){wrap.remove();document.documentElement.classList.add('lite');return}}
+    if(!keep){wrap.remove();front.remove();document.documentElement.classList.add('lite');return}}
    else if(round>=0&&frames>0&&++chk.n>=3)return}
   requestAnimationFrame(chk)}
  chk.n=0;if(N)setTimeout(function(){requestAnimationFrame(chk)},1500)}
@@ -571,7 +572,7 @@ fillTimes();
 
 // pop bubbles on tap/click (and on mouse hover); they float back up after a moment
 (function(){
- var wrap=document.getElementById('bubbles');if(!wrap)return;
+ var wrap=document.getElementById('bubbles');if(!wrap)return;var front=document.getElementById('bubblesFront');
  function pop(el){
   var b=el.getBoundingClientRect(),d=Math.max(b.width,b.height),o=document.createElement('div');o.className='pop';
   o.style.cssText='left:'+b.left+'px;top:'+b.top+'px;width:'+b.width+'px;height:'+b.height+'px';
@@ -581,7 +582,7 @@ fillTimes();
   if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
  }
  function hit(x,y,k){
-  var bs=wrap.children;
+  var bs=[].slice.call(wrap.children).concat(front?[].slice.call(front.children):[]);
   for(var i=0;i<bs.length;i++){var e=bs[i];if(e.classList.contains('gone'))continue;
    var b=e.getBoundingClientRect();if(b.width<2)continue;
    var cx=b.left+b.width/2,cy=b.top+b.height/2,r=b.width/2*k;
