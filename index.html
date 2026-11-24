@@ -87,6 +87,7 @@ h1 em{font-style:normal;color:var(--brown)}
 section{padding:92px 0}
 /* scroll cover transitions: section background washes over the bubbles, then recedes */
 .cov{position:relative;isolation:isolate}
+.lite .cov::before{clip-path:none}
 .cov::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#e9f1f4,#d4e4ea);clip-path:circle(var(--rad,200vmax) at 50% var(--cy,50%));will-change:clip-path;pointer-events:none}
 
 .eyebrow{font-size:.72rem;color:var(--brown);font-weight:600;text-align:center;margin-bottom:10px}
@@ -487,10 +488,21 @@ var bar=$('#bar'),hero=$('#top');
 if('IntersectionObserver' in window){new IntersectionObserver(function(e){var on=!e[0].isIntersecting;bar.classList.toggle('show',on);document.body.classList.toggle('has-bar',on)},{threshold:0}).observe(hero)}else{bar.classList.add('show');document.body.classList.add('has-bar')}
 // bubbles: soft, realistic, drifting up behind the page
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches){var wrap=document.createElement('div');wrap.id='bubbles';wrap.setAttribute('aria-hidden','true');
- var N=innerWidth<700?14:24;for(var b=0;b<N;b++){var e=document.createElement('span');e.className='bub';var z=Math.pow(Math.random(),1.5)*78+16;
+ var nav=navigator,cn=nav.connection||{},weak=(nav.deviceMemory&&nav.deviceMemory<=2)||(nav.hardwareConcurrency&&nav.hardwareConcurrency<=4&&innerWidth<700)||/2g/.test(cn.effectiveType||'');
+ var N=cn.saveData?0:(weak?6:(innerWidth<700?12:24));for(var b=0;b<N;b++){var e=document.createElement('span');e.className='bub';var z=Math.pow(Math.random(),1.5)*78+16;
   e.style.cssText='width:'+z+'px;height:'+z+'px;left:'+(Math.random()*96)+'%;--d:'+(16+Math.random()*16-z/10)+'s;--s:'+(3+Math.random()*4)+'s;--x:'+(10+Math.random()*26)+'px;--o:'+(.75+Math.random()*.25)+';--w:-'+(Math.random()*26)+'s';
   wrap.appendChild(e)}
- document.body.insertBefore(wrap,document.body.children[1])}
+ document.body.insertBefore(wrap,document.body.children[1]);
+ // self-tuning: if scrolling/animation is janky, thin the bubbles, then drop them
+ var bs=[].slice.call(wrap.children),last=0,frames=0,t0=0,round=0;
+ function chk(t){if(document.hidden){t0=0;frames=0;return requestAnimationFrame(chk)}
+  if(!t0){t0=t;frames=0}frames++;
+  if(t-t0>2000){var fps=frames/((t-t0)/1000);t0=0;
+   if(fps<42&&round<2){round++;var keep=round===1?Math.ceil(bs.length/2):0;bs.slice(keep).forEach(function(x){x.remove()});bs=bs.slice(0,keep);
+    if(!keep){wrap.remove();document.documentElement.classList.add('lite');return}}
+   else if(round>=0&&frames>0&&++chk.n>=3)return}
+  requestAnimationFrame(chk)}
+ chk.n=0;if(N)setTimeout(function(){requestAnimationFrame(chk)},1500)}
 // reveal
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
 document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
@@ -501,7 +513,7 @@ fillTimes();
 /* cover wipe: bg of .cov sections expands over the bubbles then shrinks away */
 (function(){
   var secs=[].slice.call(document.querySelectorAll('.cov'));
-  if(!secs.length||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  if(!secs.length||matchMedia('(prefers-reduced-motion:reduce)').matches||(navigator.connection&&navigator.connection.saveData))return;
   var tick=false;
   function ease(t){return t*t*(3-2*t)}
   function upd(){
