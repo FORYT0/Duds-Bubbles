@@ -13,6 +13,12 @@
 <meta name="geo.region" content="KE-110">
 <link rel="preload" as="image" href="assets/hero-foam.jpg" fetchpriority="high">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Duds &amp; Bubbles">
+<meta property="og:locale" content="en_KE">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Duds &amp; Bubbles: doorstep hand-wash laundry on Thika Road">
+<meta name="twitter:image:alt" content="Duds &amp; Bubbles: doorstep hand-wash laundry on Thika Road">
 <meta property="og:title" content="Duds &amp; Bubbles | Doorstep Hand-Wash Laundry">
 <meta property="og:description" content="No stress, no carrying heavy laundry. We hand-wash at your home on Thika Road. From KSh 500.">
 <meta property="og:image" content="https://dudsandbubbles.vercel.app/assets/og.jpg">
@@ -88,6 +94,14 @@ section{padding:92px 0}
 /* scroll cover transitions: section background washes over the bubbles, then recedes */
 .cov{position:relative;isolation:isolate}
 .lite .cov::before{clip-path:none}
+/* poppable bubbles */
+.bub.gone{display:none}
+.pop,.pop i{position:fixed;pointer-events:none;z-index:35;border-radius:50%}
+.pop{border:2px solid rgba(255,255,255,.95);box-shadow:0 0 0 1px rgba(110,185,228,.45),inset 0 0 12px rgba(150,205,240,.4);animation:popr .42s ease-out forwards}
+.pop i{left:50%;top:50%;width:7px;height:7px;margin:-3px 0 0 -3px;background:rgba(190,225,245,.95);box-shadow:0 0 0 1px rgba(255,255,255,.9);animation:popd .5s ease-out forwards}
+@keyframes popr{from{transform:scale(.85);opacity:1}to{transform:scale(1.55);opacity:0}}
+@keyframes popd{from{transform:rotate(var(--a)) translateX(0) scale(1);opacity:1}to{transform:rotate(var(--a)) translateX(calc(var(--r) * 1.15)) scale(.3);opacity:0}}
+
 .cov::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#e9f1f4,#d4e4ea);clip-path:circle(var(--rad,200vmax) at 50% var(--cy,50%));will-change:clip-path;pointer-events:none}
 
 .eyebrow{font-size:.72rem;color:var(--brown);font-weight:600;text-align:center;margin-bottom:10px}
@@ -362,6 +376,8 @@ footer img{width:54px;border-radius:50%;margin:0 auto 10px}
         <div class="tot"><span>Estimate</span><b id="total">KSh 0</b></div>
         <small>Final price confirmed on WhatsApp before we start.</small>
         <button class="btn caps" id="send" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 .9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2.1 1.3 2.4 1.5.3.1.5.1.7-.1l.9-1.1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.2z"/></svg>Send on WhatsApp</button>
+        <button class="btn ghost caps" id="share" type="button" style="margin-top:10px;width:100%">Share this order link</button>
+        <p id="shareMsg" class="small" aria-live="polite" style="text-align:center;margin-top:8px;min-height:1.2em"></p>
       </aside>
     </div>
   </div>
@@ -490,7 +506,7 @@ if('IntersectionObserver' in window){new IntersectionObserver(function(e){var on
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches){var wrap=document.createElement('div');wrap.id='bubbles';wrap.setAttribute('aria-hidden','true');
  var nav=navigator,cn=nav.connection||{},weak=(nav.deviceMemory&&nav.deviceMemory<=2)||(nav.hardwareConcurrency&&nav.hardwareConcurrency<=4&&innerWidth<700)||/2g/.test(cn.effectiveType||'');
  var N=cn.saveData?0:(weak?6:(innerWidth<700?12:24));for(var b=0;b<N;b++){var e=document.createElement('span');e.className='bub';var z=Math.pow(Math.random(),1.5)*78+16;
-  e.style.cssText='width:'+z+'px;height:'+z+'px;left:'+(Math.random()*96)+'%;--d:'+(16+Math.random()*16-z/10)+'s;--s:'+(3+Math.random()*4)+'s;--x:'+(10+Math.random()*26)+'px;--o:'+(.75+Math.random()*.25)+';--w:-'+(Math.random()*26)+'s';
+  e.style.cssText='width:'+z+'px;height:'+z+'px;left:'+(Math.random()*96)+'%;--d:'+(16+Math.random()*16-z/10)+'s;--s:'+(3+Math.random()*4)+'s;--x:'+(10+Math.random()*26)+'px;--o:'+(.2+Math.min(1,(z-16)/70)*.74+Math.random()*.06).toFixed(2)+';--w:-'+(Math.random()*26)+'s';
   wrap.appendChild(e)}
  document.body.insertBefore(wrap,document.body.children[1]);
  // self-tuning: if scrolling/animation is janky, thin the bubbles, then drop them
@@ -531,6 +547,52 @@ fillTimes();
   }
   function req(){if(!tick){tick=true;requestAnimationFrame(upd)}}
   addEventListener('scroll',req,{passive:true});addEventListener('resize',req);upd();
+})();
+
+// deep link: ?wash=big&iron=basic&duvet=1&area=Roysambu preselects the form; Share button builds one
+(function(){
+ var q=new URLSearchParams(location.search),w=q.get('wash'),ir=q.get('iron'),dv=q.get('duvet'),ar=q.get('area');
+ var hit=false;
+ if(w&&document.querySelector('input[name=wash][value="'+w+'"]')){document.querySelector('input[name=wash][value="'+w+'"]').checked=true;hit=true}
+ if(ir&&document.querySelector('input[name=iron][value="'+ir+'"]')){document.querySelector('input[name=iron][value="'+ir+'"]').checked=true;hit=true}
+ if(dv==='1'){document.getElementById('duvet').checked=true;hit=true}
+ if(ar&&document.getElementById('area')){document.getElementById('area').value=ar.slice(0,60);hit=true}
+ if(hit){document.getElementById('duvet').dispatchEvent(new Event('change'));setTimeout(function(){var b=document.getElementById('book');if(b)b.scrollIntoView()},400)}
+ var sh=document.getElementById('share');if(!sh)return;
+ sh.addEventListener('click',function(){
+  var p=new URLSearchParams(),g=function(n){var e=document.querySelector('input[name='+n+']:checked');return e?e.value:''};
+  p.set('wash',g('wash'));p.set('iron',g('iron'));if(document.getElementById('duvet').checked)p.set('duvet','1');
+  var url=location.origin+location.pathname+'?'+p.toString()+'#book',m=document.getElementById('shareMsg');
+  var t='Duds & Bubbles: doorstep hand-wash laundry on Thika Road. Book in 30 seconds on WhatsApp.';
+  if(navigator.share){navigator.share({title:'Duds & Bubbles',text:t,url:url}).catch(function(){})}
+  else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){m.textContent='Link copied. Paste it in WhatsApp.'},function(){m.textContent=url})}
+  else m.textContent=url});
+})();
+
+// pop bubbles on tap/click (and on mouse hover); they float back up after a moment
+(function(){
+ var wrap=document.getElementById('bubbles');if(!wrap)return;
+ function pop(el){
+  var b=el.getBoundingClientRect(),d=Math.max(b.width,b.height),o=document.createElement('div');o.className='pop';
+  o.style.cssText='left:'+b.left+'px;top:'+b.top+'px;width:'+b.width+'px;height:'+b.height+'px';
+  for(var i=0;i<7;i++){var k=document.createElement('i');k.style.cssText='--a:'+(i*51+Math.random()*30)+'deg;--r:'+(d*.55+10)+'px';o.appendChild(k)}
+  document.body.appendChild(o);setTimeout(function(){o.remove()},560);
+  el.classList.add('gone');setTimeout(function(){el.classList.remove('gone')},3500+Math.random()*3000);
+  if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
+ }
+ function hit(x,y,k){
+  var bs=wrap.children;
+  for(var i=0;i<bs.length;i++){var e=bs[i];if(e.classList.contains('gone'))continue;
+   var b=e.getBoundingClientRect();if(b.width<2)continue;
+   var cx=b.left+b.width/2,cy=b.top+b.height/2,r=b.width/2*k;
+   if((x-cx)*(x-cx)+(y-cy)*(y-cy)<=r*r&&getComputedStyle(e).opacity>.05){pop(e);return true}}
+  return false}
+ addEventListener('pointerdown',function(e){
+  if(e.target.closest&&e.target.closest('a,button,input,select,label,summary,textarea'))return;
+  hit(e.clientX,e.clientY,1.1)},{passive:true});
+ var t=false,px=0,py=0;
+ addEventListener('pointermove',function(e){if(e.pointerType!=='mouse')return;px=e.clientX;py=e.clientY;
+  if(!t){t=true;requestAnimationFrame(function(){t=false;hit(px,py,.6)})}},{passive:true});
 })();
 </script>
 </body>
